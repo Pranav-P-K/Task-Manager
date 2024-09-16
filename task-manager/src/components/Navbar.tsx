@@ -5,7 +5,7 @@ import { CheckCircle, Twitter, Instagram, Linkedin } from "lucide-react"
 const Navbar = () => {
   return (
     <header className="text-2xl px-4 lg:px-6 h-14 flex items-center border-b border-gray-800 relative z-10">
-        <Link className="flex items-center justify-center" href="#">
+        <Link className="flex items-center justify-center" href="/">
           <CheckCircle className="h-6 w-6 mr-2 text-blue-400" />
           <span className="font-bold text-white">TaskMaster</span>
         </Link>

@@ -60,12 +60,11 @@ export default function SignInPage() {
             </div>
 
             <div>
-              <button
-                type="submit"
-                className="btn btn-primary w-full"
-              >
-                Sign in
-              </button>
+              <Link href='/dashboard'>
+                <button className="btn btn-primary w-full">
+                  Sign in
+                </button>
+              </Link>
             </div>
 
             <div className="divider">OR</div>
