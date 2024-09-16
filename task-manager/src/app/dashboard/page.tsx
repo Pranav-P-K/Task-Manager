@@ -1,32 +1,35 @@
 'use client';
 import React, { useState } from "react";
-import Link from "next/link";
-import { useRouter } from 'next/navigation';
-import { CheckCircle, Plus, Users, Trash2 } from "lucide-react";
+import { Plus, Users, Trash } from "lucide-react";
+import Image from 'next/image';
+import { useTeams } from "./TeamsContext";
+import Link from 'next/link';
+
+type Team = {
+  id: string;
+  name: string;
+  role: "Team Leader" | "Team Member";
+};
 
 export default function Dashboard() {
-  const [teams, setTeams] = useState([]);
+  const { teams, setTeams } = useTeams();
   const [teamName, setTeamName] = useState("");
   const [joinTeamName, setJoinTeamName] = useState("");
   const [joinTeamId, setJoinTeamId] = useState("");
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
   const [isJoinTeamOpen, setIsJoinTeamOpen] = useState(false);
-  const router = useRouter();
+  const [teamToDelete, setTeamToDelete] = useState<string | null>(null);
 
-  // Default user information
-  const user = {
-    name: 'Random User',
-    avatar: 'https://via.placeholder.com/40',
-  };
-
+  // Generate a random ID for new teams
   const generateUniqueId = () => {
     return Math.random().toString(36).substr(2, 9);
   };
 
-  const handleCreateTeam = (e) => {
+  // Handle team creation
+  const handleCreateTeam = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (teamName) {
-      const newTeam = {
+      const newTeam: Team = {
         id: generateUniqueId(),
         name: teamName,
         role: "Team Leader",
@@ -37,10 +40,11 @@ export default function Dashboard() {
     }
   };
 
-  const handleJoinTeam = (e) => {
+  // Handle joining a team
+  const handleJoinTeam = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (joinTeamName && joinTeamId) {
-      const newTeam = {
+      const newTeam: Team = {
         id: joinTeamId,
         name: joinTeamName,
         role: "Team Member",
@@ -52,26 +56,26 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteTeam = (teamId) => {
+  // Handle deleting a team
+  const handleDeleteTeam = (teamId: string) => {
     setTeams(teams.filter(team => team.id !== teamId));
-  };
-
-  const handleTeamClick = (teamId) => {
-    router.push(`/team/${teamId}`);
+    setTeamToDelete(null);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-gray-100">
-      <header className="my-4 px-4 lg:px-6 h-14 flex items-center border-b border-gray-800">
-        <div className="flex items-center">
-          <img 
-            src={user.avatar} 
-            alt={`${user.name}'s avatar`}
-            className="w-10 h-10 rounded-full object-cover mr-2"
+      <header className="px-4 lg:px-6 h-14 flex items-center border-b border-gray-800">
+        <div className="flex items-center space-x-3">
+          <Image
+            src="/default-avatar.jpg"
+            alt="User Avatar"
+            width={40}
+            height={40}
+            className="rounded-full"
           />
-          <span className="font-bold text-white text-lg">{user.name}</span>
+          <span className="text-white font-medium">RandomUser123</span>
         </div>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <button
             onClick={() => setIsCreateTeamOpen(true)}
             className="btn btn-outline text-white border-blue-400 hover:bg-blue-600 hover:text-white"
@@ -91,26 +95,25 @@ export default function Dashboard() {
         {teams.length > 0 ? (
           <div className="max-w-4xl mx-auto mt-8 space-y-6">
             {teams.map((team) => (
-              <div key={team.id} className="p-6 bg-gray-800 rounded-lg shadow-lg flex justify-between items-center cursor-pointer hover:bg-gray-700 transition-colors duration-200" onClick={() => handleTeamClick(team.id)}>
+              <div key={team.id} className="p-6 bg-gray-800 rounded-lg shadow-lg">
                 <div className="flex items-center space-x-4">
                   <div className="bg-blue-500 rounded-full p-3">
                     <Users className="h-6 w-6 text-white" />
                   </div>
-                  <div>
-                    <p className="text-xl font-semibold">{team.name}</p>
+                  <div className="flex-1">
+                    <Link href={`/team/${team.id}`} className="text-xl font-semibold hover:underline">
+                      {team.name}
+                    </Link>
                     <p className="text-sm text-gray-400">Your Role: {team.role}</p>
                     <p className="text-sm text-gray-400">Team ID: {team.id}</p>
                   </div>
+                  <button
+                    onClick={() => setTeamToDelete(team.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash className="h-6 w-6" />
+                  </button>
                 </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteTeam(team.id);
-                  }}
-                  className="btn btn-ghost text-red-500 hover:bg-red-500 hover:text-white"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
               </div>
             ))}
           </div>
@@ -202,6 +205,30 @@ export default function Dashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {teamToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 text-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+            <h2 className="text-2xl font-bold mb-4">Confirm Delete</h2>
+            <p className="text-gray-300 mb-6">Are you sure you want to delete this team? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setTeamToDelete(null)}
+                className="btn btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteTeam(teamToDelete)}
+                className="btn btn-primary"
+              >
+                Delete Team
+              </button>
+            </div>
           </div>
         </div>
       )}
