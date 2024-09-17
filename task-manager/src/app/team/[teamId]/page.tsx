@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTeams } from '@/app/dashboard/TeamsContext';
 import { Plus, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
 
 // Type definitions
 interface Comment {
@@ -32,35 +30,48 @@ interface Team {
 const TaskStatus = {
   TODO: 'To Do',
   IN_PROGRESS: 'In Progress',
-  DONE: 'Done'
+  DONE: 'Done',
 };
 
 const TaskPriority = {
   LOW: 'Low',
   MEDIUM: 'Medium',
-  HIGH: 'High'
+  HIGH: 'High',
 };
 
 export default function TeamPage() {
-  const { teamId } = useParams();
+  const { teamId }: { teamId: string} = useParams();
   const router = useRouter();
-  const { teams, setTeams } = useTeams();
+  const [teams, setTeams] = useState<Team[]>([]);
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState<{ title: string; priority: string }>({ title: '', priority: TaskPriority.MEDIUM });
+  const [newTask, setNewTask] = useState<{ title: string; priority: string }>({
+    title: '',
+    priority: TaskPriority.MEDIUM,
+  });
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [comment, setComment] = useState('');
 
   useEffect(() => {
-    if (teamId && teams) {
-      const team = teams.find(t => t.id === teamId);
+    // Fetch and set teams data here (you could replace with API calls)
+    const fetchedTeams: Team[] = [
+      { id: '1', name: 'Alpha Team', role: 'Team Leader' },
+      { id: '2', name: 'Beta Squad', role: 'Team Member' },
+      ];
+      setTeams(fetchedTeams);
+      setCurrentTeam({ id: teamId, name: "random team name", role: "Team Leader"});
+      /*
+
+    if (teamId && fetchedTeams) {
+      const team = fetchedTeams.find((t) => t.id === teamId);
       if (team) {
         setCurrentTeam(team);
       } else {
         router.push('/dashboard');
       }
-    }
-  }, [teamId, teams, router]);
+    }*/
+  }, [teamId, router]);
+
   // Handle adding a new task
   const handleAddTask = () => {
     if (newTask.title) {
@@ -71,19 +82,21 @@ export default function TeamPage() {
 
   // Handle updating task status
   const handleUpdateTaskStatus = (taskId: number, newStatus: string) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId ? { ...task, status: newStatus } : task
-    ));
+    setTasks(
+      tasks.map((task) => (task.id === taskId ? { ...task, status: newStatus } : task))
+    );
   };
 
   // Handle adding a comment
   const handleAddComment = () => {
     if (comment && selectedTask) {
-      setTasks(tasks.map(task =>
-        task.id === selectedTask.id
-          ? { ...task, comments: [...task.comments, { id: Date.now(), text: comment }] }
-          : task
-      ));
+      setTasks(
+        tasks.map((task) =>
+          task.id === selectedTask.id
+            ? { ...task, comments: [...task.comments, { id: Date.now(), text: comment }] }
+            : task
+        )
+      );
       setComment('');
     }
   };
@@ -96,13 +109,13 @@ export default function TeamPage() {
   ];
 
   // Generate random names for other teams
-  const otherTeams = ['Alpha Team', 'Beta Squad', 'Gamma Group', 'Delta Force', 'Epsilon Crew'];
+  const otherTeams = ['Gamma Group', 'Delta Force', 'Epsilon Crew'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 text-gray-100 p-6 flex">
       <div className="w-1/4 pr-4">
         <h2 className="text-xl font-bold mb-4">Your Teams</h2>
-        {teams && teams.map(team => (
+        {teams.map((team) => (
           <Link key={team.id} href={`/team/${team.id}`} className="block mb-2 p-2 bg-gray-800 rounded hover:bg-gray-700">
             {team.name}
           </Link>
@@ -134,8 +147,10 @@ export default function TeamPage() {
               onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
               className="select select-bordered mr-2"
             >
-              {Object.values(TaskPriority).map(priority => (
-                <option key={priority} value={priority}>{priority}</option>
+              {Object.values(TaskPriority).map((priority) => (
+                <option key={priority} value={priority}>
+                  {priority}
+                </option>
               ))}
             </select>
             <button onClick={handleAddTask} className="btn btn-primary">
@@ -146,30 +161,45 @@ export default function TeamPage() {
 
         <div className="mb-4">
           <h2 className="text-2xl font-bold mb-2">Tasks</h2>
-          {tasks.map(task => (
+          {tasks.map((task) => (
             <div key={task.id} className="mb-2 p-2 bg-gray-800 rounded">
               <div className="flex justify-between items-center">
-                <span>{task.title} - Priority: {task.priority}</span>
+                <span>
+                  {task.title} - Priority: {task.priority}
+                </span>
                 {currentTeam?.role === 'Team Member' && (
                   <div>
-                    <button onClick={() => handleUpdateTaskStatus(task.id, TaskStatus.TODO)} className="btn btn-ghost btn-sm mr-1">
+                    <button
+                      onClick={() => handleUpdateTaskStatus(task.id, TaskStatus.TODO)}
+                      className="btn btn-ghost btn-sm mr-1"
+                    >
                       <XCircle className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleUpdateTaskStatus(task.id, TaskStatus.IN_PROGRESS)} className="btn btn-ghost btn-sm mr-1">
+                    <button
+                      onClick={() => handleUpdateTaskStatus(task.id, TaskStatus.IN_PROGRESS)}
+                      className="btn btn-ghost btn-sm mr-1"
+                    >
                       <Clock className="h-4 w-4" />
                     </button>
-                    <button onClick={() => handleUpdateTaskStatus(task.id, TaskStatus.DONE)} className="btn btn-ghost btn-sm">
+                    <button
+                      onClick={() => handleUpdateTaskStatus(task.id, TaskStatus.DONE)}
+                      className="btn btn-ghost btn-sm"
+                    >
                       <CheckCircle className="h-4 w-4" />
                     </button>
                   </div>
                 )}
               </div>
-              <button onClick={() => setSelectedTask(task)} className="btn btn-ghost btn-sm mt-2">View Comments</button>
+              <button onClick={() => setSelectedTask(task)} className="btn btn-ghost btn-sm mt-2">
+                View Comments
+              </button>
               {selectedTask?.id === task.id && (
                 <div className="mt-2">
                   <h3 className="font-bold">Comments:</h3>
-                  {task.comments.map(comment => (
-                    <p key={comment.id} className="text-sm">{comment.text}</p>
+                  {task.comments.map((comment) => (
+                    <p key={comment.id} className="text-sm">
+                      {comment.text}
+                    </p>
                   ))}
                   <input
                     type="text"
@@ -178,7 +208,9 @@ export default function TeamPage() {
                     className="input input-bordered input-sm mr-2 mt-2"
                     placeholder="Add a comment"
                   />
-                  <button onClick={handleAddComment} className="btn btn-primary btn-sm">Add Comment</button>
+                  <button onClick={handleAddComment} className="btn btn-primary btn-sm">
+                    Add Comment
+                  </button>
                 </div>
               )}
             </div>

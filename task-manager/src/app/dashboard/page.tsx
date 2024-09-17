@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { Plus, Users, Trash } from "lucide-react";
 import Image from 'next/image';
-import { useTeams } from "./TeamsContext";
 import Link from 'next/link';
 
 type Team = {
@@ -12,7 +11,7 @@ type Team = {
 };
 
 export default function Dashboard() {
-  const { teams, setTeams } = useTeams();
+  const [teams, setTeams] = useState<Team[]>([]); // Manage state locally
   const [teamName, setTeamName] = useState("");
   const [joinTeamName, setJoinTeamName] = useState("");
   const [joinTeamId, setJoinTeamId] = useState("");
@@ -34,7 +33,7 @@ export default function Dashboard() {
         name: teamName,
         role: "Team Leader",
       };
-      setTeams([...teams, newTeam]);
+      setTeams([...teams, newTeam]);  // Update teams state directly
       setTeamName("");
       setIsCreateTeamOpen(false);
     }
@@ -49,7 +48,7 @@ export default function Dashboard() {
         name: joinTeamName,
         role: "Team Member",
       };
-      setTeams([...teams, newTeam]);
+      setTeams([...teams, newTeam]);  // Update teams state directly
       setJoinTeamName("");
       setJoinTeamId("");
       setIsJoinTeamOpen(false);
@@ -58,7 +57,7 @@ export default function Dashboard() {
 
   // Handle deleting a team
   const handleDeleteTeam = (teamId: string) => {
-    setTeams(teams.filter(team => team.id !== teamId));
+    setTeams(teams.filter(team => team.id !== teamId));  // Update teams state
     setTeamToDelete(null);
   };
 
@@ -209,12 +208,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Confirm Delete Modal */}
+      {/* Delete Team Modal */}
       {teamToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-gray-800 text-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-            <h2 className="text-2xl font-bold mb-4">Confirm Delete</h2>
-            <p className="text-gray-300 mb-6">Are you sure you want to delete this team? This action cannot be undone.</p>
+            <h2 className="text-2xl font-bold mb-4">Delete Team</h2>
+            <p className="text-gray-300 mb-6">Are you sure you want to delete this team?</p>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setTeamToDelete(null)}
@@ -224,7 +223,7 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={() => handleDeleteTeam(teamToDelete)}
-                className="btn btn-primary"
+                className="btn btn-danger"
               >
                 Delete Team
               </button>
